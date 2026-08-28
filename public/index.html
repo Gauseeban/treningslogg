@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Treningslogg</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <h1>Min Treningslogg</h1>
+
+        <form id="okt-skjema">
+            <input type="text" id="ovelse" placeholder="Øvelse" required>
+            <input type="number" id="vekt" placeholder="Vekt (kg)" step="0.5" required>
+            <input type="number" id="reps" placeholder="Reps" required>
+            <input type="number" id="sett" placeholder="Sett" required>
+            <input type="date" id="dato" required>
+            <button type="submit">Legg til økt</button>
+        </form>
+
+        <div id="okt-liste">
+            <!-- Treningsøktene kommer til å vises her -->
+        </div>
+
+        <script>
+            async function hentOkter() {
+                const response = await fetch('/okter');
+                const okter = await response.json();
+
+                const listeContainer = document.getElementById('okt-liste');
+                listeContainer.innerHTML = '';
+
+                okter.forEach(okt => {
+                    const oktElement = document.createElement('div');
+                    oktElement.className = 'okt-rad';
+
+                    const tekst = document.createElement('span'); 
+                    tekst.textContent = `${okt.dato} - ${okt.ovelse}: ${okt.sett} sett x ${okt.reps} reps @ ${okt.vekt}kg`;
+
+                    const slettKnapp = document.createElement('button');
+                    slettKnapp.textContent = 'Slett';
+                    slettKnapp.className = 'slett-knapp';
+                    slettKnapp.addEventListener('click', () => slettOkt(okt.id));
+
+                    oktElement.appendChild(tekst);
+                    oktElement.appendChild(slettKnapp);
+                    listeContainer.appendChild(oktElement);
+                });
+            }
+
+            async function slettOkt(id) {
+                await fetch(`/okter/${id}`, {
+                    method: 'DELETE'
+                });
+
+                hentOkter();
+            }
+
+            async function leggTilOkt(event) {
+                event.preventDefault();
+
+                const nyOkt = {
+                    ovelse: document.getElementById('ovelse').value,
+                    vekt: parseFloat(document.getElementById('vekt').value),
+                    reps: parseInt(document.getElementById('reps').value),
+                    sett: parseInt(document.getElementById('sett').value),
+                    dato: document.getElementById('dato').value
+                };
+
+                await fetch('/okter', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json'},
+                    body: JSON.stringify(nyOkt)
+                });
+
+                document.getElementById('okt-skjema').reset();
+                hentOkter();
+            }
+
+            document.getElementById('okt-skjema').addEventListener('submit', leggTilOkt);
+
+            hentOkter();
+        </script>
+    </body>
+</html>
