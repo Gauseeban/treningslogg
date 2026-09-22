@@ -41,6 +41,19 @@ app.delete('/okter/:id', (req, res) => {
     res.json({ message: 'Økt slettet', id: Number(id) });
 });
 
+// Hent alle unike øvelsesnavn (til dropdown)
+app.get('/ovelser', (req, res) => {
+    const rows = db.prepare('SELECT DISTINCT ovelse FROM okter ORDER BY ovelse ASC').all();
+    res.json(rows.map(r => r.ovelse));
+});
+
+// Hent statistikk for en gitt øvelse, sortert kronologisk 
+app.get('/stats/:ovelse', (req, res) => {
+    const { ovelse } = req.params;
+    const rows = db.prepare('SELECT dato, vekt, reps, sett FROM okter WHERE ovelse = ? ORDER BY dato ASC').all(ovelse);
+    res.json(rows);
+});
+
 app.listen(PORT, () => {
     console.log(`Server kjører på http://localhost:${PORT}`);
 });

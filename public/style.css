@@ -62,3 +62,18 @@ button:hover {
 .slett-knapp:hover {
     background-color: #c0392b;
 }
+
+#statistikk-seksjon {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+#ovelse-velger {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}

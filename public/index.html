@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <title>Treningslogg</title>
         <link rel="stylesheet" href="style.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
     </head>
     <body>
         <h1>Min Treningslogg</h1>
@@ -19,6 +20,14 @@
 
         <div id="okt-liste">
             <!-- Treningsøktene kommer til å vises her -->
+        </div>
+
+        <div id="statistikk-seksjon">
+            <h2>Progresjon per øvelse</h2>
+            <select id="ovelse-velger">
+                <option value="">Velg øvelse...</option>
+            </select>
+            <canvas id="progresjons-graf"></canvas>
         </div>
 
         <script>
@@ -75,6 +84,57 @@
                 document.getElementById('okt-skjema').reset();
                 hentOkter();
             }
+
+            let graf = null;
+
+            async function hentOvelser() {
+                const response = await fetch('/ovelser');
+                const ovelser = await response.json();
+
+                const velger = document.getElementById('ovelse-velger');
+                ovelser.forEach(ovelse => {
+                    const option = document.createElement('option');
+                    option.value = ovelse;
+                    option.textContent = ovelse;
+                    velger.appendChild(option);
+                });
+            }
+
+            async function visStatistikk(ovelse) {
+                if (!ovelse) return;
+
+                const response = await fetch(`/stats/${ovelse}`);
+                const data = await response.json();
+
+                const ctx = document.getElementById('progresjons-graf');
+                if(graf) graf.destroy();
+
+                graf = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => d.dato),
+                        datasets: [{
+                            label: `Vekt (kg) - ${ovelse}`,
+                            data: data.map(d => d.vekt),
+                            borderColor: '#2c3e50',
+                            backgroundColor: 'rgba(44, 62, 80, 0.1)',
+                            tension: 0.2,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true, 
+                        scales: {y: {beginAtZero: false}}
+                    }
+                });
+            }
+
+            document.getElementById('ovelse-velger').addEventListener('change', e => {
+                visStatistikk(e.target.value);
+            });
+
+            hentOkter();
+            hentOvelser();
 
             document.getElementById('okt-skjema').addEventListener('submit', leggTilOkt);
 
