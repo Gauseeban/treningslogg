@@ -92,12 +92,17 @@
                 const ovelser = await response.json();
 
                 const velger = document.getElementById('ovelse-velger');
+                const valgt = velger.value;
+                velger.innerHTML = '<option value="">Velg øvelse...</option>';
+
                 ovelser.forEach(ovelse => {
                     const option = document.createElement('option');
                     option.value = ovelse;
                     option.textContent = ovelse;
                     velger.appendChild(option);
                 });
+
+                velger.value = valgt;
             }
 
             async function visStatistikk(ovelse) {
@@ -129,11 +134,23 @@
                 });
             }
 
+            async function oppdaterStatistikk() {
+                await hentOvelser();
+                const valgt = document.getElementById('ovelse-velger').value;
+                if (valgt) {
+                    visStatistikk(valgt);
+                } else if (graf) {
+                    graf.destroy();
+                    graf = null;
+                }
+            }
+
             document.getElementById('ovelse-velger').addEventListener('change', e => {
                 visStatistikk(e.target.value);
             });
 
             hentOkter();
+            oppdaterStatistikk();
             hentOvelser();
 
             document.getElementById('okt-skjema').addEventListener('submit', leggTilOkt);
